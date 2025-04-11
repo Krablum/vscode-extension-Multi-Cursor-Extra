@@ -10,19 +10,22 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:multicursorex.cursor",
-    "onCommand:multicursorex.hello"
+    "onCommand:multicursorex.padding.pad"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "multicursorex.cursor",
+        "command": "multicursorex.padding.pad",
         "title": "multicurMain"
       },
       {
-        "command": "multicursorex.hello",
-        "title": "multicurHello"
+        "command": "multicursorex.padding.anchorUp",
+        "title": "multicurMain"
+      },
+      {
+        "command": "multicursorex.padding.anchorDown",
+        "title": "multicurMain"
       }
     ]
   },
