@@ -1,3 +1,5 @@
+import { promises } from 'dns';
+import path, { dirname } from 'path';
 import * as vscode from 'vscode';
 
 
@@ -5,38 +7,29 @@ import * as vscode from 'vscode';
 class CursorPaddingClass{
 	selections : readonly vscode.Selection[] = vscode.window.activeTextEditor!.selections;
 	anchor : vscode.Selection;
-	posHierarchy : number[][] = [[],[]];
+	positionOrder : number[][] = [[],[]];
 
-	constructor(anchor : vscode.Selection){
+	filePath : string;
+	options: vscode.DecorationRenderOptions;
+	decoration: vscode.TextEditorDecorationType;
+
+	constructor(anchor : vscode.Selection, filePath : string){
 		
 		this.anchor = anchor;
+		this.filePath = filePath;
+		this.options = {
 
+			gutterIconPath : vscode.Uri.file(filePath),
+			gutterIconSize : "100%"
 
-	}
+		};
+		this.decoration = vscode.window.createTextEditorDecorationType(this.options);
 
-	orderHierarchy() : number[][]{
-
-		for(let n = 0; n < this.selections.length; n++){
-			if(this.selections[n].end.line > this.anchor.end.line) {
-				
-				this.posHierarchy[1].push(this.selections[n].end.line);
-				continue;
-			} 
-			
-			if(this.selections[n].end.line  < this.anchor.end.line){
+	};
 	
-				this.posHierarchy[0].push(this.selections[n].end.line);
-				continue;
-			}
-		}
 
-		this.posHierarchy[0].sort((a,b)=>{return b-a;});
-		this.posHierarchy[1].sort((a,b)=>{return a-b;});
 
-		
 
-		return this.posHierarchy;
-	}
 
 	anchorTransform(){
 
@@ -46,16 +39,42 @@ class CursorPaddingClass{
 		 */
 
 		/**
-		 * * Planning to use the webview or custom editor api for this job and more to come.
-		 * 
+		 * * Using TextEditorDecorationType from the vscode extension api.
+		 * * Use contenticonpath and put the range where the anchor to give an icon for where padding originates
 		 * 
 		 */
+		
+		const range = new vscode.Range(this.anchor.end, this.anchor.end);
 
+		vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
+		
+		vscode.workspace.onDidChangeTextDocument(()=>{
+			vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
+		});
+	}
 
+	order() : number[][]{
 
+		for(let n = 0; n < this.selections.length; n++){
+			if(this.selections[n].end.line > this.anchor.end.line) {
+				
+				this.positionOrder[1].push(this.selections[n].end.line);
+				continue;
+			} 
+			
+			if(this.selections[n].end.line  < this.anchor.end.line){
+	
+				this.positionOrder[0].push(this.selections[n].end.line);
+				continue;
+			}
+		}
+
+		this.positionOrder[0].sort((a,b)=>{return b-a;});
+		this.positionOrder[1].sort((a,b)=>{return a-b;});
 
 		
 
+		return this.positionOrder;
 	}
 
 	padding() : vscode.Selection[]{ 
@@ -66,7 +85,7 @@ class CursorPaddingClass{
 
 			if(this.selections[i].end.line > this.anchor.end.line){
 				
-				let indexAddend: number = this.posHierarchy[1].indexOf(this.selections[i].end.line)+1;
+				let indexAddend: number = this.positionOrder[1].indexOf(this.selections[i].end.line)+1;
 
 				const newPosition: {start:vscode.Position, end: vscode.Position} = {
 					start: new vscode.Position(this.selections[i].start.line + indexAddend, this.selections[i].start.character),
@@ -82,7 +101,7 @@ class CursorPaddingClass{
 
 			if(this.selections[i].end.line < this.anchor.end.line){
 
-				let indexAddend: number = this.posHierarchy[0].indexOf(this.selections[i].end.line)+1;
+				let indexAddend: number = this.positionOrder[0].indexOf(this.selections[i].end.line)+1;
 
 				const newPosition: {start:vscode.Position, end: vscode.Position} = {
 					start: (()=>{ 
@@ -126,6 +145,7 @@ class CursorPaddingClass{
 		vscode.window.activeTextEditor!.selections = newSelections;
 		return newSelections;
 	}
+
 }
 
 
@@ -137,45 +157,48 @@ class CursorPaddingClass{
  * 
  */
 
+const paddingObjects : CursorPaddingClass[] = [];
+
+const cPaddingList = {
+
+	cPad() : (...args:any[])=>(any){
+
+		return ()=>{
+			let selections = vscode.window.activeTextEditor!.selections;
+	
+			const anchor : vscode.Selection = selections[selections.length-1];
+			
+
+			const path = (__dirname.split('\\'));
+			path.pop(); //To take out \out
+
+			const command = new CursorPaddingClass(anchor, path.join('\\') + '\\media\\circle.svg'); 
+			paddingObjects.push(command);
+			
+			paddingObjects.at(-2)?.decoration.dispose();
+			command.anchorTransform();
+			command.order();
+			command.padding();
+
+			console.log(path.join('\\') + '\\media\\circle.svg');
+		};
+	},
+
+	cAnchor(){
+
+	}
+};
+
 
 
 export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.showInformationMessage('Activated');
 
-	const disposablePadding = vscode.commands.registerCommand('multicursorex.cursor', ()=>{	
-		
-		let selections = vscode.window.activeTextEditor!.selections;
-
-		const anchor : vscode.Selection = selections[selections.length-1];
-		
-		const foo = new CursorPaddingClass(anchor);
-	
-		foo.orderHierarchy();
-	
-		foo.padding();
-
-		vscode.window.activeTextEditor!.options.lineNumbers = 2;
-
-
-	});
-
+	const disposablePadding = vscode.commands.registerCommand('multicursorex.padding.pad', cPaddingList.cPad());	
 
 	context.subscriptions.push(disposablePadding);   
 	
-
-	const disposableFoo = vscode.commands.registerCommand('multicursorex.hello', ()=>{
-		let Position = new vscode.Position(15,0);
-
-		let selection = new vscode.Selection(Position,Position);
-
-		vscode.window.activeTextEditor!.selection = selection;
-	});
-
-	context.subscriptions.push(disposableFoo);
-
-
 }
 
 export function deactivate() {}
-
