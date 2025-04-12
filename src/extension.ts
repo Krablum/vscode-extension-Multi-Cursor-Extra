@@ -33,17 +33,6 @@ class CursorPaddingClass{
 
 	anchorTransform(){
 
-		/**
-		 * TODO: use vscode.window.activeTextEditor!.options.lineNumber = 2 to signify where the new anchor will be, to do so you must create a way to make it so the anchor will be the new active selection so the linenumber will be according.
-		 * TODO: You might can do that by changing the order of selections in the array vscode.window.activeTextEditor!.selections or something to do with active selections.
-		 */
-
-		/**
-		 * * Using TextEditorDecorationType from the vscode extension api.
-		 * * Use contenticonpath and put the range where the anchor to give an icon for where padding originates
-		 * 
-		 */
-		
 		const range = new vscode.Range(this.anchor.end, this.anchor.end);
 
 		vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
@@ -148,14 +137,6 @@ class CursorPaddingClass{
 
 }
 
-
-/**
- * 
- * 
- * TODO: Remember to create a class for creating disposable variables
- * 
- * 
- */
 
 const paddingObjects : CursorPaddingClass[] = [];
 
