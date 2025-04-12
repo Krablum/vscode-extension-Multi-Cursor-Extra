@@ -6,24 +6,24 @@ import * as vscode from 'vscode';
 
 class CursorPaddingClass{
 	selections : readonly vscode.Selection[] = vscode.window.activeTextEditor!.selections;
-	anchor : vscode.Selection;
+	paddingOrigin : vscode.Selection;
 	positionOrder : number[][] = [[],[]];
 
-	filePath : string;
-	options: vscode.DecorationRenderOptions;
+	decorationFilePath : string;
+	decorationOptions: vscode.DecorationRenderOptions;
 	decoration: vscode.TextEditorDecorationType;
 
-	constructor(anchor : vscode.Selection, filePath : string){
+	constructor(selection  : vscode.Selection, filePath : string){
 		
-		this.anchor = anchor;
-		this.filePath = filePath;
-		this.options = {
+		this.paddingOrigin = selection ;
+		this.decorationFilePath = filePath;
+		this.decorationOptions = {
 
 			gutterIconPath : vscode.Uri.file(filePath),
 			gutterIconSize : "100%"
 
 		};
-		this.decoration = vscode.window.createTextEditorDecorationType(this.options);
+		this.decoration = vscode.window.createTextEditorDecorationType(this.decorationOptions);
 
 	};
 	
@@ -31,20 +31,9 @@ class CursorPaddingClass{
 
 
 
-	anchorTransform(){
+	originIndicate(){
 
-		/**
-		 * TODO: use vscode.window.activeTextEditor!.options.lineNumber = 2 to signify where the new anchor will be, to do so you must create a way to make it so the anchor will be the new active selection so the linenumber will be according.
-		 * TODO: You might can do that by changing the order of selections in the array vscode.window.activeTextEditor!.selections or something to do with active selections.
-		 */
-
-		/**
-		 * * Using TextEditorDecorationType from the vscode extension api.
-		 * * Use contenticonpath and put the range where the anchor to give an icon for where padding originates
-		 * 
-		 */
-		
-		const range = new vscode.Range(this.anchor.end, this.anchor.end);
+		const range = new vscode.Range(this.paddingOrigin.end, this.paddingOrigin.end);
 
 		vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
 		
@@ -56,13 +45,13 @@ class CursorPaddingClass{
 	order() : number[][]{
 
 		for(let n = 0; n < this.selections.length; n++){
-			if(this.selections[n].end.line > this.anchor.end.line) {
+			if(this.selections[n].end.line > this.paddingOrigin.end.line) {
 				
 				this.positionOrder[1].push(this.selections[n].end.line);
 				continue;
 			} 
 			
-			if(this.selections[n].end.line  < this.anchor.end.line){
+			if(this.selections[n].end.line  < this.paddingOrigin.end.line){
 	
 				this.positionOrder[0].push(this.selections[n].end.line);
 				continue;
@@ -83,7 +72,7 @@ class CursorPaddingClass{
 		
 		for(let i = 0; i < this.selections.length; i++){
 
-			if(this.selections[i].end.line > this.anchor.end.line){
+			if(this.selections[i].end.line > this.paddingOrigin.end.line){
 				
 				let indexAddend: number = this.positionOrder[1].indexOf(this.selections[i].end.line)+1;
 
@@ -99,7 +88,7 @@ class CursorPaddingClass{
 				continue;
 			}
 
-			if(this.selections[i].end.line < this.anchor.end.line){
+			if(this.selections[i].end.line < this.paddingOrigin.end.line){
 
 				let indexAddend: number = this.positionOrder[0].indexOf(this.selections[i].end.line)+1;
 
@@ -134,7 +123,7 @@ class CursorPaddingClass{
 				continue;
 			}
 
-			if(this.selections[i].end.line === this.anchor.end.line){
+			if(this.selections[i].end.line === this.paddingOrigin.end.line){
 				newSelections.push(this.selections[i]);
 				continue;
 			}
@@ -149,15 +138,7 @@ class CursorPaddingClass{
 }
 
 
-/**
- * 
- * 
- * TODO: Remember to create a class for creating disposable variables
- * 
- * 
- */
-
-const paddingObjects : CursorPaddingClass[] = [];
+const cursorPaddingObjects : CursorPaddingClass[] = [];
 
 const cPaddingList = {
 
@@ -166,17 +147,17 @@ const cPaddingList = {
 		return ()=>{
 			let selections = vscode.window.activeTextEditor!.selections;
 	
-			const anchor : vscode.Selection = selections[selections.length-1];
+			const objectPaddingOrigin : vscode.Selection = selections.at(-1)!;
 			
 
 			const path = (__dirname.split('\\'));
 			path.pop(); //To take out \out
 
-			const command = new CursorPaddingClass(anchor, path.join('\\') + '\\media\\circle.svg'); 
-			paddingObjects.push(command);
+			const command = new CursorPaddingClass(objectPaddingOrigin, path.join('\\') + '\\media\\circle.svg'); 
+			cursorPaddingObjects.push(command);
 			
-			paddingObjects.at(-2)?.decoration.dispose();
-			command.anchorTransform();
+			cursorPaddingObjects.at(-2)?.decoration.dispose();
+			command.originIndicate();
 			command.order();
 			command.padding();
 

@@ -1,9 +1,9 @@
-# Change Log
+## [v0.1.1] - 2025-04-12 
 
-All notable changes to the "multicursorex" extension will be documented in this file.
+`paddingOrigin` indicator is now shown with the function `originIndicate`
+"media" file is added
+extension.ts was refurnished
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
+## [v0.1.0]
 
 - Initial release
