@@ -10,22 +10,34 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:multicursorex.padding.pad"
+    "onCommand:multicursorex.padding.pad",
+    "onCommand:multicursorex.padding.originUp"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "multicursorex.padding.pad",
-        "title": "multicurMain"
+      "command": "multicursorex.padding.pad",
+        "title": "Add padding"
       },
       {
-        "command": "multicursorex.padding.anchorUp",
-        "title": "multicurMain"
+        "command": "multicursorex.padding.originUp",
+        "title": "originUp"
       },
       {
-        "command": "multicursorex.padding.anchorDown",
-        "title": "multicurMain"
+        "command": "multicursorex.padding.originDown",
+        "title": "Change origin position to a lower height/increment origin position value"
+      },
+      {
+        "command": "multicursorex.padding.originVisual",
+        "title": "Indicate where is the origin currently at"
+      }
+    ],
+    "keybindings":[
+      {
+        "command": "multicursorex.padding.originVisual",
+        "key": "alt+click"
+      
       }
     ]
   },
