@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	import { error } from 'console';
 	import * as vscode from 'vscode';
 
@@ -32,6 +33,22 @@ class Origin{
 		}
 =======
 >>>>>>> Stashed changes
+=======
+import { throws } from 'assert';
+import { error } from 'console';
+import * as vscode from 'vscode';
+
+// Facade Design Pattern
+
+class Origin{
+
+	selection : vscode.Selection;
+
+	constructor(selection : vscode.Selection){
+
+		this.selection = selection;
+
+>>>>>>> Stashed changes
 	}
 
 	transformation = {
@@ -41,11 +58,20 @@ class Origin{
 			const arr : vscode.Selection[] = [];
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 		origin : vscode.Selection;
 		selectionPositionOrder : number[][] = [[],[]];
 
 		constructor(origin : vscode.Selection, filePath : string){
 			super();
+=======
+			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
+			arr.sort((a,b)=>{return a.end.line-b.end.line;});
+			
+			const index = arr.indexOf(this.selection)-1;
+			const nextSelection : vscode.Selection | undefined =  arr.at(index);
+			
+			if(nextSelection === undefined){ throw error('Variable "nextSelection" is type of undefined');}
 =======
 			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
 			arr.sort((a,b)=>{return a.end.line-b.end.line;});
@@ -61,6 +87,13 @@ class Origin{
 		down : ()=>{
 >>>>>>> Stashed changes
 
+			this.selection = nextSelection;
+		},
+		
+		down : ()=>{
+>>>>>>> Stashed changes
+
+<<<<<<< Updated upstream
 			this.origin = (vscode.window.activeTextEditor!.selections).at(-1)!;
 
 <<<<<<< Updated upstream
@@ -80,11 +113,18 @@ class Origin{
 	};
 	indicate(){
 >>>>>>> Stashed changes
+=======
+
+		}
+	};
+	indicate(){
+>>>>>>> Stashed changes
 
 
 	
 	}
 }
+<<<<<<< Updated upstream
 
 <<<<<<< Updated upstream
 		originIndicate(){
@@ -114,6 +154,11 @@ class Origin{
 =======
 class Decoration{
 
+=======
+
+class Decoration{
+
+>>>>>>> Stashed changes
 	decorationFilePath : string;
 	decorationOptions: vscode.DecorationRenderOptions;
 	decoration: vscode.TextEditorDecorationType;
@@ -167,6 +212,7 @@ class Padding{
 
 		this.selectionSequence.lesserThenOrigin.sort((a,b)=>{return b-a;});
 		this.selectionSequence.greaterThenOrigin.sort((a,b)=>{return a-b;});
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 
 		return [this.selectionSequence.lesserThenOrigin, this.selectionSequence.greaterThenOrigin];
@@ -202,6 +248,14 @@ class Padding{
 
 	pad(){
 >>>>>>> Stashed changes
+=======
+
+		return [this.selectionSequence.lesserThenOrigin, this.selectionSequence.greaterThenOrigin];
+
+	}
+
+	pad(){
+>>>>>>> Stashed changes
 
 		console.log(this.order());
 		
@@ -220,7 +274,11 @@ class Padding{
 			if(this.selections[i].end.line > this.origin.end.line){
 				
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 				let indexAddend: number = this.selectionPositionOrder[1].indexOf(this.selections[i].end.line)+1;
+=======
+				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].end.line)+1;
+>>>>>>> Stashed changes
 =======
 				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].end.line)+1;
 >>>>>>> Stashed changes
@@ -238,12 +296,19 @@ class Padding{
 			}
 
 		//* Same pattern by decrease by one as we are bring the selections up
+<<<<<<< Updated upstream
 
 			if(this.selections[i].end.line < this.origin.end.line){
 
 <<<<<<< Updated upstream
 				let indexAddend: number = this.selectionPositionOrder[0].indexOf(this.selections[i].end.line)+1;
 =======
+				let indexAddend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
+>>>>>>> Stashed changes
+=======
+
+			if(this.selections[i].end.line < this.origin.end.line){
+
 				let indexAddend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
 >>>>>>> Stashed changes
 
@@ -292,6 +357,7 @@ class Padding{
 		vscode.window.activeTextEditor!.selections = newSelections;
 		return newSelections;
 	}
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
 
@@ -376,9 +442,60 @@ class Padding{
 	}
 
 	export function deactivate() {}
+=======
+}
 
 
+export class paddingCmd{
 
+	static pad(decorationFilePath : string) {
+
+		return ()=>{
+
+			const decorationOptions : object = { 
+			
+				gutterIconPath : vscode.Uri.file(decorationFilePath),
+				gutterIconSize : "100%"
+					
+			}; 
+			
+			function originIndex() : number{
+				const arr : vscode.Selection[] = [];
+				vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
+				arr.sort((a,b)=>{return a.end.line - b.end.line;});
+	
+				return Math.round(arr.length/2) - 1;
+			}
+	
+			const origin = new Origin(vscode.window.activeTextEditor!.selections.at(originIndex())!);
+			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
+	
+			Decoration.decorationInstances.push(circleDecoration.decoration);
+			Decoration.decorationInstances.at(-2)?.dispose();
+			origin.indicate();
+
+			console.log(origin.selection.end.line);
+	
+			new Padding(origin.selection).pad();
+
+			
+
+		};
+	}
+>>>>>>> Stashed changes
+
+	static originUp(){
+
+		return () =>{
+
+			//* continues this...
+
+		};
+	}
+}
+
+
+<<<<<<< Updated upstream
 
 
 
@@ -467,6 +584,10 @@ export class paddingCmd{
 =======
 export function activate(context: vscode.ExtensionContext) {
 	
+=======
+export function activate(context: vscode.ExtensionContext) {
+	
+>>>>>>> Stashed changes
 	
 
 	
@@ -479,5 +600,9 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 
+<<<<<<< Updated upstream
+//! learn why activate() seem to be already complied but the classes are dynamic
+>>>>>>> Stashed changes
+=======
 //! learn why activate() seem to be already complied but the classes are dynamic
 >>>>>>> Stashed changes
