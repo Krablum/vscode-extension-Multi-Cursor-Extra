@@ -1,54 +1,24 @@
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-	import { error } from 'console';
-	import * as vscode from 'vscode';
-
-	type ExParam = [
-		origin? : vscode.Selection,
-		mediaPath? : string,
-	]
-=======
 import { throws } from 'assert';
-import { error } from 'console';
+import { Console, error } from 'console';
 import * as vscode from 'vscode';
 
 // Facade Design Pattern
 
 class Origin{
->>>>>>> Stashed changes
 
 	selection : vscode.Selection;
+	decorationObj : Decoration;
 
-	constructor(selection : vscode.Selection){
+	constructor(selection : vscode.Selection | undefined, decorationObj : Decoration){
 
-		this.selection = selection;
-
-<<<<<<< Updated upstream
-		selections : readonly vscode.Selection[] = vscode.window.activeTextEditor!.selections;
-
-		static commandFn(...args:ExParam) : (...args:any[])=>(any) {
-			return ()=>{
-
-			};
+		if(typeof(selection) === "undefined"){
+			vscode.window.showErrorMessage('Error : Arg of "selection" is undefined');
+			throw error;
 		}
-=======
->>>>>>> Stashed changes
-=======
-import { throws } from 'assert';
-import { error } from 'console';
-import * as vscode from 'vscode';
-
-// Facade Design Pattern
-
-class Origin{
-
-	selection : vscode.Selection;
-
-	constructor(selection : vscode.Selection){
 
 		this.selection = selection;
-
->>>>>>> Stashed changes
+		this.decorationObj = decorationObj;
+		
 	}
 
 	transformation = {
@@ -57,22 +27,6 @@ class Origin{
 			
 			const arr : vscode.Selection[] = [];
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-		origin : vscode.Selection;
-		selectionPositionOrder : number[][] = [[],[]];
-
-		constructor(origin : vscode.Selection, filePath : string){
-			super();
-=======
-			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
-			arr.sort((a,b)=>{return a.end.line-b.end.line;});
-			
-			const index = arr.indexOf(this.selection)-1;
-			const nextSelection : vscode.Selection | undefined =  arr.at(index);
-			
-			if(nextSelection === undefined){ throw error('Variable "nextSelection" is type of undefined');}
-=======
 			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
 			arr.sort((a,b)=>{return a.end.line-b.end.line;});
 			
@@ -85,80 +39,26 @@ class Origin{
 		},
 		
 		down : ()=>{
->>>>>>> Stashed changes
 
-			this.selection = nextSelection;
-		},
+
+
+		}
+	};
+	indicate(){
+
+		const range = new vscode.Range(this.selection.end, this.selection.end);
+
+		vscode.window.activeTextEditor!.setDecorations(this.decorationObj.decoration, [range]);
 		
-		down : ()=>{
->>>>>>> Stashed changes
-
-<<<<<<< Updated upstream
-			this.origin = (vscode.window.activeTextEditor!.selections).at(-1)!;
-
-<<<<<<< Updated upstream
-			
-			this.decorationFilePath = filePath;
-			this.decorationOptions = {
-
-				gutterIconPath : vscode.Uri.file(filePath),
-				gutterIconSize : "100%"
-
-			};
-			this.decoration = vscode.window.createTextEditorDecorationType(this.decorationOptions);
-		}
-=======
-
-		}
-	};
-	indicate(){
->>>>>>> Stashed changes
-=======
-
-		}
-	};
-	indicate(){
->>>>>>> Stashed changes
-
-
+		vscode.workspace.onDidChangeTextDocument(()=>{
+			vscode.window.activeTextEditor!.setDecorations(this.decorationObj.decoration, [range]);
+		});
 	
 	}
 }
-<<<<<<< Updated upstream
-
-<<<<<<< Updated upstream
-		originIndicate(){
-
-				const range = new vscode.Range(this.origin.end, this.origin.end);
-
-				vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
-				
-				vscode.workspace.onDidChangeTextDocument(()=>{
-					vscode.window.activeTextEditor!.setDecorations(this.decoration, [range]);
-				});
-			}
-
-		static commandFn(origin : vscode.Selection, mediaPath : string): (...args: any[]) => (any){
-			return ()=>{
-
-			};
-		};
-
-	}
-
-	class Padding extends PaddingClass{
-
-		constructor(origin : vscode.Selection, filePath : string){
-			super(origin, filePath);
-		}
-=======
-class Decoration{
-
-=======
 
 class Decoration{
 
->>>>>>> Stashed changes
 	decorationFilePath : string;
 	decorationOptions: vscode.DecorationRenderOptions;
 	decoration: vscode.TextEditorDecorationType;
@@ -212,52 +112,14 @@ class Padding{
 
 		this.selectionSequence.lesserThenOrigin.sort((a,b)=>{return b-a;});
 		this.selectionSequence.greaterThenOrigin.sort((a,b)=>{return a-b;});
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-
-		return [this.selectionSequence.lesserThenOrigin, this.selectionSequence.greaterThenOrigin];
-
-<<<<<<< Updated upstream
-			for(let n = 0; n < this.selections.length; n++){
-				if(this.selections[n].end.line > this.origin.end.line) {
-					
-					this.selectionPositionOrder[1].push(this.selections[n].end.line);
-					continue;
-				} 
-				
-				if(this.selections[n].end.line  < this.origin.end.line){
-
-					this.selectionPositionOrder[0].push(this.selections[n].end.line);
-					continue;
-				}
-			}
-
-
-		
-			this.selectionPositionOrder[0].sort((a,b)=>{return b-a;});
-			this.selectionPositionOrder[1].sort((a,b)=>{return a-b;});
-
-			
-
-			return this.selectionPositionOrder;
-		}
-
-	private pad() : vscode.Selection[]{ 
-=======
-	}
-
-	pad(){
->>>>>>> Stashed changes
-=======
 
 		return [this.selectionSequence.lesserThenOrigin, this.selectionSequence.greaterThenOrigin];
 
 	}
 
 	pad(){
->>>>>>> Stashed changes
 
-		console.log(this.order());
+		this.order();
 		
 		const newSelections: vscode.Selection[] = [];
 
@@ -273,19 +135,19 @@ class Padding{
 
 			if(this.selections[i].end.line > this.origin.end.line){
 				
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-				let indexAddend: number = this.selectionPositionOrder[1].indexOf(this.selections[i].end.line)+1;
-=======
 				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].end.line)+1;
->>>>>>> Stashed changes
-=======
-				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].end.line)+1;
->>>>>>> Stashed changes
+
+				const startLine = this.selections[i].start.line + indexAddend;
+				const endLine = this.selections[i].end.line + indexAddend;
+
+				const startChar =  this.selections[i].start.character;
+				const endChar =  this.selections[i].end.character;
+
 
 				const newPosition: {start:vscode.Position, end: vscode.Position} = {
-					start: new vscode.Position(this.selections[i].start.line + indexAddend, this.selections[i].start.character),
-					end: new vscode.Position(this.selections[i].end.line + indexAddend, this.selections[i].end.character)
+
+					start: new vscode.Position(startLine, startChar),
+					end: new vscode.Position(endLine, endChar)
 
 				};
 
@@ -296,54 +158,51 @@ class Padding{
 			}
 
 		//* Same pattern by decrease by one as we are bring the selections up
-<<<<<<< Updated upstream
 
 			if(this.selections[i].end.line < this.origin.end.line){
 
-<<<<<<< Updated upstream
-				let indexAddend: number = this.selectionPositionOrder[0].indexOf(this.selections[i].end.line)+1;
-=======
-				let indexAddend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
->>>>>>> Stashed changes
-=======
-
-			if(this.selections[i].end.line < this.origin.end.line){
-
-				let indexAddend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
->>>>>>> Stashed changes
+				let indexSubtrahend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
 
 				const newPosition: {start:vscode.Position, end: vscode.Position} = {
 					start: (()=>{ 
-						
-						const newStart = this.selections[i].start.line - indexAddend;
 
-						if(newStart < 0){
+						const startLine = this.selections[i].start.line - indexSubtrahend;
+						const startChar =  this.selections[i].start.character;
+
+						if(startLine < 0){
 							return new vscode.Position(0,0);
 						}
 
-						return new vscode.Position(this.selections[i].start.line - indexAddend, this.selections[i].start.character);
+						console.log(new vscode.Position(startLine, startChar));
+
+						return new vscode.Position(startLine, startChar);
 
 					})(),
 					end: (()=>{ 
-						
-						const newEnd = this.selections[i].end.line - indexAddend;
 
-						if(newEnd < 0){
+						const startLine = this.selections[i].end.line - indexSubtrahend;
+						const startChar =  this.selections[i].end.character;
+
+						if(startLine < 0){
 							return new vscode.Position(0,0);
 						}
+						
 
-						return new vscode.Position(this.selections[i].end.line - indexAddend, this.selections[i].start.character);
+						console.log(new vscode.Position(startLine, startChar));
+
+						return new vscode.Position(startLine, startChar);
 
 					})(),
 				};
 
 				const newSelection: vscode.Selection = new vscode.Selection(newPosition.start,newPosition.end);
+				
 				newSelections.push(newSelection);
 
 				continue;
 			}
 
-		//* We don't give indexAddend to the origin
+		//* We don't give indexAddend/indexSubtrahend to the origin
 
 			if(this.selections[i].end.line === this.origin.end.line){
 				newSelections.push(this.selections[i]);
@@ -355,254 +214,109 @@ class Padding{
 
 
 		vscode.window.activeTextEditor!.selections = newSelections;
+		console.log(newSelections);
 		return newSelections;
 	}
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
+}
 
 
+export class paddingCmd{
 
-	static commandFn(origin : vscode.Selection, mediaPath : string) : (...args:any[])=>(any){
+	private static originAddend : number = 0;
 
-			return ()=>{
-				const padding = new Padding(origin, mediaPath);
+	protected static currentOrigin = () : vscode.Selection | undefined =>{
+		const arr : vscode.Selection[] = [];
+		vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
+		arr.sort((a,b)=>{return a.end.line - b.end.line;});
 
-				this.decorationInstances.push(padding.decoration);
-				this.decorationInstances.at(-2)?.dispose();
-				console.log(this.decorationInstances);
+		console.log(arr);
+		
+		const indexMedian = Math.round(arr.length/2) - 1;
+		
+		console.log(indexMedian + this.originAddend);
+		console.log(this.originAddend);	
+		console.log(indexMedian); //TODO : find a way to make it so we dont need to make an extra command activate to change origin on new selection or gone selections
 
-				padding.originIndicate();
-				console.log(padding.order());
-				padding.pad();
+		return arr.at(indexMedian + this.originAddend);
 
+	};
+
+	private static disposeDecoration(decoration : vscode.TextEditorDecorationType){
+
+		Decoration.decorationInstances.push(decoration);
+		Decoration.decorationInstances.at(-2)?.dispose();
+	}
+
+	static pad(decorationFilePath : string) { //possibly make mutiple variations of these functions so i dont need to make a new Decoration object and make it shared
+
+		return ()=>{
+
+			const decorationOptions : object = { 
+			
+				gutterIconPath : vscode.Uri.file(decorationFilePath),
+				gutterIconSize : "100%"
+					
 			};
-		}
-	}
 
-	class Anchor extends PaddingClass{
+			const originSelection : vscode.Selection | undefined = this.currentOrigin();
 
-
-		constructor(origin : vscode.Selection, filePath : string){
-			super(origin, filePath);
-
-		}
-
-		private originTransform = {
-
-			up : () : vscode.Selection =>{  
-				const arr : vscode.Selection[] = [];
-				vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
-				arr.sort((a,b)=>{return a.end.line-b.end.line;});
-				
-				const index = arr.indexOf(this.origin)-1;
-				const nextSelection : vscode.Selection | undefined =  arr.at(index);
-
-				if(nextSelection === undefined){ throw error('Variable "nextSelection" is type of undefined');}
-
-				this.origin = nextSelection;
-
-				return nextSelection;
-			},
-
-			down : ()=>{
-
-			}
-		};
-	}
-
-	let origin : vscode.Selection = (vscode.window.activeTextEditor!.selections).at(-1)!;
-	/**
-	 * ! Variables for origin doesnt work for some reason and fix the origin indication
-	 */
-
-	export function activate(context: vscode.ExtensionContext) {
-
-		const origin = (vscode.window.activeTextEditor!.selections).at(-1)!;
-		const mediaPath = (() : string =>{	
-
-			const path = (__dirname.split('\\'));
-			path.pop(); //To take out \out
-	
-			/**
-			 ** ^^^^^^^^^^
-			 ** This may need to be configured for different folder directories.
-			 */
-	
-			 return path.join('\\') + '\\media\\circle.svg';
-		})();
-	
-
-
-		const disposablePadding = vscode.commands.registerCommand('multicursorex.padding.pad', Padding.commandFn(origin , mediaPath));	
-
-		context.subscriptions.push(disposablePadding);
-
-		const foo = new Anchor(origin,'C:\\Users\\Kevin\\Desktop\\vscode-extension-Multi-Cursor-Extra\\media\\circle.svg');
-
-	}
-
-	export function deactivate() {}
-=======
-}
-
-
-export class paddingCmd{
-
-	static pad(decorationFilePath : string) {
-
-		return ()=>{
-
-			const decorationOptions : object = { 
-			
-				gutterIconPath : vscode.Uri.file(decorationFilePath),
-				gutterIconSize : "100%"
-					
-			}; 
-			
-			function originIndex() : number{
-				const arr : vscode.Selection[] = [];
-				vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
-				arr.sort((a,b)=>{return a.end.line - b.end.line;});
-	
-				return Math.round(arr.length/2) - 1;
-			}
-	
-			const origin = new Origin(vscode.window.activeTextEditor!.selections.at(originIndex())!);
 			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
-	
+
+			const origin = new Origin(originSelection, circleDecoration);
+
 			Decoration.decorationInstances.push(circleDecoration.decoration);
 			Decoration.decorationInstances.at(-2)?.dispose();
 			origin.indicate();
 
-			console.log(origin.selection.end.line);
-	
 			new Padding(origin.selection).pad();
 
 			
 
 		};
 	}
->>>>>>> Stashed changes
 
-	static originUp(){
+	static originUp(decorationFilePath : string){
 
 		return () =>{
-
-			//* continues this...
-
-		};
-	}
-}
-
-
-<<<<<<< Updated upstream
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-}
-
-
-export class paddingCmd{
-
-	static pad(decorationFilePath : string) {
-
-		return ()=>{
 
 			const decorationOptions : object = { 
 			
 				gutterIconPath : vscode.Uri.file(decorationFilePath),
 				gutterIconSize : "100%"
 					
-			}; 
-			
-			function originIndex() : number{
-				const arr : vscode.Selection[] = [];
-				vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
-				arr.sort((a,b)=>{return a.end.line - b.end.line;});
-	
-				return Math.round(arr.length/2) - 1;
+			};
+
+			this.originAddend = this.originAddend - 1;
+
+			if(Math.abs(this.originAddend) >= vscode.window.activeTextEditor!.selections.length){
+				this.originAddend = 0;
 			}
-	
-			const origin = new Origin(vscode.window.activeTextEditor!.selections.at(originIndex())!);
-			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
-	
-			Decoration.decorationInstances.push(circleDecoration.decoration);
-			Decoration.decorationInstances.at(-2)?.dispose();
-			origin.indicate();
 
-			console.log(origin.selection.end.line);
-	
-			new Padding(origin.selection).pad();
+			const originSelection : vscode.Selection | undefined = this.currentOrigin();
+			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
+
+			const origin = new Origin(originSelection, circleDecoration);
+			this.disposeDecoration(circleDecoration.decoration);
 
 			
-
-		};
-	}
->>>>>>> Stashed changes
-
-	static originUp(){
-
-		return () =>{
-
-			//* continues this...
+			origin.indicate();
 
 		};
 	}
 }
 
-
-<<<<<<< Updated upstream
-
-
-
-	
-
-=======
 export function activate(context: vscode.ExtensionContext) {
 	
-=======
-export function activate(context: vscode.ExtensionContext) {
 	
->>>>>>> Stashed changes
-	
-
-	
-
 	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad("C:\\Users\\Kevin\\Desktop\\vscode-extension-Multi-Cursor-Extra\\media\\circle.svg"));	
 	
 	context.subscriptions.push(disposablePadding);
+
+	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp("C:\\Users\\Kevin\\Desktop\\vscode-extension-Multi-Cursor-Extra\\media\\circle.svg"));	
+	
+	context.subscriptions.push(disposableOriginUp);
 }
 
 export function deactivate() {}
 
 
-<<<<<<< Updated upstream
-//! learn why activate() seem to be already complied but the classes are dynamic
->>>>>>> Stashed changes
-=======
-//! learn why activate() seem to be already complied but the classes are dynamic
->>>>>>> Stashed changes
