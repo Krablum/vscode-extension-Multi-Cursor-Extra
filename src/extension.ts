@@ -28,7 +28,7 @@ class Origin{
 			const arr : vscode.Selection[] = [];
 
 			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
-			arr.sort((a,b)=>{return a.end.line-b.end.line;});
+			arr.sort((a,b)=>{return a.anchor.line-b.anchor.line;});
 			
 			const index = arr.indexOf(this.selection)-1;
 			const nextSelection : vscode.Selection | undefined =  arr.at(index);
@@ -97,15 +97,15 @@ class Padding{
 	order(){
 
 		for(let n = 0; n < this.selections.length; n++){
-			if(this.selections[n].end.line > this.origin.end.line) {
+			if(this.selections[n].active.line > this.origin.active.line) {
 				
-				this.selectionSequence.greaterThenOrigin.push(this.selections[n].end.line);
+				this.selectionSequence.greaterThenOrigin.push(this.selections[n].active.line);
 				continue;
 			} 
 			
-			if(this.selections[n].end.line  < this.origin.end.line){
+			if(this.selections[n].active.line  < this.origin.active.line){
 
-				this.selectionSequence.lesserThenOrigin.push(this.selections[n].end.line);
+				this.selectionSequence.lesserThenOrigin.push(this.selections[n].active.line);
 				continue;
 			}
 		}
@@ -124,7 +124,7 @@ class Padding{
 		const newSelections: vscode.Selection[] = [];
 
 		//* for loop in which it iterates through all selection currently in the active editor and see whether the said selection is greater then the origin where the selection pads from
-		//* after finding the greater selections the loop then takes the values of of index from selectionPositionOrder which is a 2d array which orders all the end.line value position
+		//* after finding the greater selections the loop then takes the values of of index from selectionPositionOrder which is a 2d array which orders all the active.line value position
 		//* this value is then added by 1 and is defined as indexAddend
 		//* we then make new position objects in which we take the currently iterated selection then added by the indexAddend for both the start and end of a selection to change position of a selection
 		//* this work as it makes a clear spacing called padding as it make a hierarchical pattern of the array for example(We have the selection ordered in position values {8,5,3,1} these values have index which follows {0,1,2,3} making it a indexAddend, add all elements by 1
@@ -133,25 +133,25 @@ class Padding{
 		
 		for(let i = 0; i < this.selections.length; i++){
 
-			if(this.selections[i].end.line > this.origin.end.line){
+			if(this.selections[i].active.line > this.origin.active.line){
 				
-				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].end.line)+1;
+				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].active.line)+1;
 
-				const startLine = this.selections[i].start.line + indexAddend;
-				const endLine = this.selections[i].end.line + indexAddend;
+				const anchorLine = this.selections[i].anchor.line + indexAddend;
+				const activeLine = this.selections[i].active.line + indexAddend;
 
-				const startChar =  this.selections[i].start.character;
-				const endChar =  this.selections[i].end.character;
+				const anchorChar =  this.selections[i].anchor.character;
+				const activeChar =  this.selections[i].active.character;
 
 
-				const newPosition: {start:vscode.Position, end: vscode.Position} = {
+				const newPosition: {anchor : vscode.Position, active : vscode.Position} = {
 
-					start: new vscode.Position(startLine, startChar),
-					end: new vscode.Position(endLine, endChar)
+					anchor: new vscode.Position(anchorLine, anchorChar),
+					active: new vscode.Position(activeLine, activeChar)
 
 				};
 
-				const newSelection: vscode.Selection = new vscode.Selection(newPosition.start,newPosition.end);
+				const newSelection: vscode.Selection = new vscode.Selection(newPosition.anchor,newPosition.active);
 				newSelections.push(newSelection);
 
 				continue;
@@ -159,43 +159,43 @@ class Padding{
 
 		//* Same pattern by decrease by one as we are bring the selections up
 
-			if(this.selections[i].end.line < this.origin.end.line){
+			if(this.selections[i].active.line < this.origin.active.line){
 
-				let indexSubtrahend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].end.line)+1;
+				let indexSubtrahend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].active.line)+1;
 
-				const newPosition: {start:vscode.Position, end: vscode.Position} = {
-					start: (()=>{ 
+				const newPosition: {active:vscode.Position, anchor: vscode.Position} = {
+					active: (()=>{ 
 
-						const startLine = this.selections[i].start.line - indexSubtrahend;
-						const startChar =  this.selections[i].start.character;
+						const activeLine = this.selections[i].active.line - indexSubtrahend;
+						const activeChar =  this.selections[i].active.character;
 
-						if(startLine < 0){
+						if(activeLine < 0){
 							return new vscode.Position(0,0);
 						}
 
-						console.log(new vscode.Position(startLine, startChar));
+						console.log(new vscode.Position(activeLine, activeChar));
 
-						return new vscode.Position(startLine, startChar);
+						return new vscode.Position(activeLine, activeChar);
 
 					})(),
-					end: (()=>{ 
+					anchor: (()=>{ 
 
-						const startLine = this.selections[i].end.line - indexSubtrahend;
-						const startChar =  this.selections[i].end.character;
+						const anchorLine = this.selections[i].anchor.line - indexSubtrahend;
+						const anchorChar =  this.selections[i].anchor.character;
 
-						if(startLine < 0){
+						if(anchorLine < 0){
 							return new vscode.Position(0,0);
 						}
 						
 
-						console.log(new vscode.Position(startLine, startChar));
+						console.log(new vscode.Position(anchorLine, anchorChar));
 
-						return new vscode.Position(startLine, startChar);
+						return new vscode.Position(anchorLine, anchorChar);
 
 					})(),
 				};
 
-				const newSelection: vscode.Selection = new vscode.Selection(newPosition.start,newPosition.end);
+				const newSelection: vscode.Selection = new vscode.Selection(newPosition.anchor,newPosition.active);
 				
 				newSelections.push(newSelection);
 
@@ -204,7 +204,7 @@ class Padding{
 
 		//* We don't give indexAddend/indexSubtrahend to the origin
 
-			if(this.selections[i].end.line === this.origin.end.line){
+			if(this.selections[i].active.line === this.origin.active.line){
 				newSelections.push(this.selections[i]);
 				continue;
 				
@@ -227,7 +227,7 @@ export class paddingCmd{
 	protected static currentOrigin = () : vscode.Selection | undefined =>{
 		const arr : vscode.Selection[] = [];
 		vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
-		arr.sort((a,b)=>{return a.end.line - b.end.line;});
+		arr.sort((a,b)=>{return a.active.line - b.active.line;});
 
 		console.log(arr);
 		
@@ -286,7 +286,7 @@ export class paddingCmd{
 					
 			};
 
-			this.originAddend = this.originAddend - 1;
+			this.originAddend--;
 
 			if(Math.abs(this.originAddend) >= vscode.window.activeTextEditor!.selections.length){
 				this.originAddend = 0;
@@ -306,13 +306,27 @@ export class paddingCmd{
 }
 
 export function activate(context: vscode.ExtensionContext) {
+
+	const mediaPath = (() : string =>{	
+
+		const path = (__dirname.split('\\'));
+		path.pop(); //To take out \out
+
+		/**
+		 ** ^^^^^^^^^^
+		 ** This may need to be configured for different folder directories.
+		 */
+
+		 return path.join('\\') + '\\media\\circle.svg';
+	})();
+
 	
 	
-	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad("C:\\Users\\Kevin\\Desktop\\vscode-extension-Multi-Cursor-Extra\\media\\circle.svg"));	
+	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad(mediaPath));	
 	
 	context.subscriptions.push(disposablePadding);
 
-	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp("C:\\Users\\Kevin\\Desktop\\vscode-extension-Multi-Cursor-Extra\\media\\circle.svg"));	
+	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp(mediaPath));	
 	
 	context.subscriptions.push(disposableOriginUp);
 }
