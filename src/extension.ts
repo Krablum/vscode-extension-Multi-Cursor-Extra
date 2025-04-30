@@ -173,8 +173,6 @@ class Padding{
 							return new vscode.Position(0,0);
 						}
 
-						console.log(new vscode.Position(activeLine, activeChar));
-
 						return new vscode.Position(activeLine, activeChar);
 
 					})(),
@@ -186,9 +184,6 @@ class Padding{
 						if(anchorLine < 0){
 							return new vscode.Position(0,0);
 						}
-						
-
-						console.log(new vscode.Position(anchorLine, anchorChar));
 
 						return new vscode.Position(anchorLine, anchorChar);
 
@@ -214,7 +209,6 @@ class Padding{
 
 
 		vscode.window.activeTextEditor!.selections = newSelections;
-		console.log(newSelections);
 		return newSelections;
 	}
 }
@@ -223,21 +217,24 @@ class Padding{
 export class paddingCmd{
 
 	private static originAddend : number = 0;
+	private static prevSelectionAmount : number = vscode.window.activeTextEditor!.selections.length;
 
 	protected static currentOrigin = () : vscode.Selection | undefined =>{
 		const arr : vscode.Selection[] = [];
 		vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
 		arr.sort((a,b)=>{return a.active.line - b.active.line;});
-
-		console.log(arr);
 		
-		const indexMedian = Math.round(arr.length/2) - 1;
-		
-		console.log(indexMedian + this.originAddend);
-		console.log(this.originAddend);	
-		console.log(indexMedian); //TODO : find a way to make it so we dont need to make an extra command activate to change origin on new selection or gone selections
+		let indexMedian = Math.round(arr.length/2) - 1;
+		let originIndex : number = indexMedian + this.originAddend;
 
-		return arr.at(indexMedian + this.originAddend);
+	
+		if(arr.length !== this.prevSelectionAmount){ // when you create a new a selection or remove a selection it automatically make the origin the median of selections
+			originIndex = indexMedian;
+		}
+
+		this.prevSelectionAmount = arr.length;
+
+		return arr.at(originIndex);
 
 	};
 
@@ -275,9 +272,12 @@ export class paddingCmd{
 		};
 	}
 
-	static originUp(decorationFilePath : string){
+	static originUp(decorationFilePath : string, ){
+		
 
 		return () =>{
+			
+			
 
 			const decorationOptions : object = { 
 			
@@ -289,7 +289,9 @@ export class paddingCmd{
 			this.originAddend--;
 
 			if(Math.abs(this.originAddend) >= vscode.window.activeTextEditor!.selections.length){
+
 				this.originAddend = 0;
+
 			}
 
 			const originSelection : vscode.Selection | undefined = this.currentOrigin();
@@ -319,14 +321,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 		 return path.join('\\') + '\\media\\circle.svg';
 	})();
-
 	
 	
 	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad(mediaPath));	
 	
 	context.subscriptions.push(disposablePadding);
 
-	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp(mediaPath));	
+	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp(mediaPath, ));	
 	
 	context.subscriptions.push(disposableOriginUp);
 }
