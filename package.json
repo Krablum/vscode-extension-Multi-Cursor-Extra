@@ -2,7 +2,7 @@
   "name": "multicursorex",
   "displayName": "multi-cursor++",
   "description": "",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -11,35 +11,34 @@
   ],
   "activationEvents": [
     "onCommand:multicursorex.padding.pad",
-    "onCommand:multicursorex.padding.originUp"
+    "onCommand:multicursorex.padding.originUp",
+    "onCommand:multicursorex.padding.lockOriginToMedian" 
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
       "command": "multicursorex.padding.pad",
-        "title": "Add padding"
+        "title": "MultiCursor++: Pad Selections/Cursors"
       },
       {
         "command": "multicursorex.padding.originUp",
-        "title": "originUp"
+        "title": "MultiCursor++: Cycle Origin Upwards"
       },
       {
         "command": "multicursorex.padding.originDown",
-        "title": "Change origin position to a lower height/increment origin position value"
+        "title": "MultiCursor++: Cycle Origin Downwards"
       },
       {
-        "command": "multicursorex.padding.originVisual",
-        "title": "Indicate where is the origin currently at"
+        "command": "multicursorex.padding.originShow",
+        "title": "MultiCursor++: Show Origin"
+      },
+      {
+        "command": "multicursorex.padding.lockOriginToMedian",
+        "title": "MultiCursor++: Lock Origin to Selection/Cursor Median"
       }
     ],
-    "keybindings":[
-      {
-        "command": "multicursorex.padding.originVisual",
-        "key": "alt+click"
-      
-      }
-    ]
+    "keybindings":[]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
