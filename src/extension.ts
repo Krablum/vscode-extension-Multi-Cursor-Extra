@@ -1,5 +1,5 @@
 import { throws } from 'assert';
-import { Console, error } from 'console';
+import {assert, Console, error } from 'console';
 import * as vscode from 'vscode';
 
 // Facade Design Pattern
@@ -7,52 +7,97 @@ import * as vscode from 'vscode';
 class Origin{
 
 	selection : vscode.Selection;
-	decorationObj : Decoration;
+	visual : Decoration;
+	private changeEventListener?: vscode.Disposable;
 
-	constructor(selection : vscode.Selection | undefined, decorationObj : Decoration){
+	constructor(selection : vscode.Selection | undefined, decoration : Decoration){
 
 		if(typeof(selection) === "undefined"){
-			vscode.window.showErrorMessage('Error : Arg of "selection" is undefined');
-			throw error;
+
+			throw error('Origin: Argument "selection" is undefined');
 		}
 
 		this.selection = selection;
-		this.decorationObj = decorationObj;
+		this.visual = decoration;
 		
 	}
 
 	transformation = {
 
 		up : ()=>{
-			
-			const arr : vscode.Selection[] = [];
 
-			vscode.window.activeTextEditor!.selections.map((x)=>{arr.push(x);});
-			arr.sort((a,b)=>{return a.anchor.line-b.anchor.line;});
-			
-			const index = arr.indexOf(this.selection)-1;
-			const nextSelection : vscode.Selection | undefined =  arr.at(index);
-			
-			if(nextSelection === undefined){ throw error('Variable "nextSelection" is type of undefined');}
+			const lineSet = new Set<number>();
+			vscode.window.activeTextEditor!.selections.map(x => lineSet.add(x.active.line));
+			lineSet.add(this.selection.active.line);
 
-			this.selection = nextSelection;
+			const lineArr = [...lineSet];
+			lineArr.sort((a,b)=>{return a - b;});
+
+			console.log(lineArr);
+			console.log	(this.selection);
+			console.log(lineArr.indexOf(this.selection.active.line));
+			console.log(lineArr.indexOf(this.selection.active.line)-1);
+
+			const lineUp : vscode.Position = new vscode.Position(lineArr.at(lineArr.indexOf(this.selection.active.line)-1)!, 0);
+ 
+			const newOrigin = new vscode.Selection(lineUp, lineUp);
+
+			this.selection = newOrigin;
+
+			return this.selection;
+
 		},
-		
+
 		down : ()=>{
+
+			const lineSet = new Set<number>();
+			vscode.window.activeTextEditor!.selections.map(x => lineSet.add(x.active.line));
+			lineSet.add(this.selection.active.line);
+
+			const lineArr = [...lineSet];
+			lineArr.sort((a,b)=>{return a - b;});
+
+			console.log(lineArr);
+			console.log	(this.selection);
+			console.log(lineArr.indexOf(this.selection.active.line));
+			console.log(lineArr.indexOf(this.selection.active.line)+1);
+
+			const lineUp : vscode.Position = new vscode.Position(lineArr.at(lineArr.indexOf(this.selection.active.line)-1)!, 0);
+ 
+			const newOrigin = new vscode.Selection(lineUp, lineUp);
+
+			this.selection = newOrigin;
+
+			return this.selection;
 
 
 
 		}
+		
 	};
+
 	indicate(){
 
 		const range = new vscode.Range(this.selection.end, this.selection.end);
 
-		vscode.window.activeTextEditor!.setDecorations(this.decorationObj.decoration, [range]);
+		vscode.window.activeTextEditor!.setDecorations(this.visual.decoration, [range]);
+
+		if(this.changeEventListener){
+
+			this.changeEventListener.dispose();
+
+		}
 		
-		vscode.workspace.onDidChangeTextDocument(()=>{
-			vscode.window.activeTextEditor!.setDecorations(this.decorationObj.decoration, [range]);
+		this.changeEventListener = vscode.workspace.onDidChangeTextDocument(()=>{ //Always fire when change as subscription is placed on the event - It is use to make the decoration is not duplicated when press enter in the text editor
+			vscode.window.activeTextEditor!.setDecorations(this.visual.decoration, [range]);
 		});
+
+		setTimeout(()=>{//decoration will disapper in 5 second
+
+			this.visual.decoration.dispose();
+			this.changeEventListener?.dispose();
+
+		}, 2000);
 	
 	}
 }
@@ -62,29 +107,30 @@ class Decoration{
 	decorationFilePath : string;
 	decorationOptions: vscode.DecorationRenderOptions;
 	decoration: vscode.TextEditorDecorationType;
-	static decorationInstances : vscode.TextEditorDecorationType[] =[];
 
 	constructor(filePath : string, options : object){
 
 		this.decorationFilePath = filePath;
 		this.decorationOptions = options;
 		this.decoration = vscode.window.createTextEditorDecorationType(this.decorationOptions);
-
 	}
 
+	disposeDecoration(){ 
+		this.decoration.dispose();
+	}
 }
 
 
 
 class Padding{
 
-	origin : vscode.Selection;
+	origin : Origin;
 
 	selections : readonly vscode.Selection[] =  vscode.window.activeTextEditor!.selections; 
 
-	constructor(selection : vscode.Selection){
+	constructor(origin : Origin){
 
-		this.origin = selection;
+		this.origin= origin;
 
 	}
 
@@ -94,16 +140,16 @@ class Padding{
 		lesserThenOrigin : []
 	};
 
-	order(){
+	order(){ // to order the the two arrays the pad() will use so the index-based logic will be correct
 
 		for(let n = 0; n < this.selections.length; n++){
-			if(this.selections[n].active.line > this.origin.active.line) {
+			if(this.selections[n].active.line > this.origin.selection.active.line) {
 				
 				this.selectionSequence.greaterThenOrigin.push(this.selections[n].active.line);
 				continue;
 			} 
 			
-			if(this.selections[n].active.line  < this.origin.active.line){
+			if(this.selections[n].active.line  < this.origin.selection.active.line){
 
 				this.selectionSequence.lesserThenOrigin.push(this.selections[n].active.line);
 				continue;
@@ -133,7 +179,7 @@ class Padding{
 		
 		for(let i = 0; i < this.selections.length; i++){
 
-			if(this.selections[i].active.line > this.origin.active.line){
+			if(this.selections[i].active.line > this.origin.selection.active.line){
 				
 				let indexAddend: number = this.selectionSequence.greaterThenOrigin.indexOf(this.selections[i].active.line)+1;
 
@@ -159,7 +205,7 @@ class Padding{
 
 		//* Same pattern by decrease by one as we are bring the selections up
 
-			if(this.selections[i].active.line < this.origin.active.line){
+			if(this.selections[i].active.line < this.origin.selection.active.line){
 
 				let indexSubtrahend: number = this.selectionSequence.lesserThenOrigin.indexOf(this.selections[i].active.line)+1;
 
@@ -199,7 +245,7 @@ class Padding{
 
 		//* We don't give indexAddend/indexSubtrahend to the origin
 
-			if(this.selections[i].active.line === this.origin.active.line){
+			if(this.selections[i].active.line === this.origin.selection.active.line){
 				newSelections.push(this.selections[i]);
 				continue;
 				
@@ -216,98 +262,185 @@ class Padding{
 
 export class paddingCmd{
 
-	private static originAddend : number = 0;
-	private static prevSelectionAmount : number = vscode.window.activeTextEditor!.selections.length;
+	private static decorationFilePath : string;
+	private static decorationOptions : object;
+	private static currentOriginSelection : vscode.Selection | undefined; 
+	private static lockOriginToMedianBool : boolean = true;
+	private static decorationInstances : Decoration[] =[];
 
-	protected static currentOrigin = () : vscode.Selection | undefined =>{
+
+	private static selectionMedian() : vscode.Selection | undefined{
+
 		const arr : vscode.Selection[] = [];
 		vscode.window.activeTextEditor!.selections.map(x => arr.push(x));
 		arr.sort((a,b)=>{return a.active.line - b.active.line;});
 		
 		let indexMedian = Math.round(arr.length/2) - 1;
-		let originIndex : number = indexMedian + this.originAddend;
 
-	
-		if(arr.length !== this.prevSelectionAmount){ // when you create a new a selection or remove a selection it automatically make the origin the median of selections
-			originIndex = indexMedian;
-		}
-
-		this.prevSelectionAmount = arr.length;
-
-		return arr.at(originIndex);
+		return arr.at(indexMedian);
 
 	};
 
-	private static disposeDecoration(decoration : vscode.TextEditorDecorationType){
+	private static cleanDecorations(decoration: Decoration){
 
-		Decoration.decorationInstances.push(decoration);
-		Decoration.decorationInstances.at(-2)?.dispose();
+		this.decorationInstances.push(decoration);
+		const decorationDelete : Decoration | undefined = this.decorationInstances.at(-2);
+
+		if(decorationDelete !== undefined){
+		
+			decorationDelete!.disposeDecoration();
+			this.decorationInstances.splice(this.decorationInstances.indexOf(decorationDelete!), 1);
+
+		}
+
 	}
 
-	static pad(decorationFilePath : string) { //possibly make mutiple variations of these functions so i dont need to make a new Decoration object and make it shared
+
+	private static applyDecorationConfiguration(filePath : string) : object{
+		this.decorationFilePath = filePath;
+
+		this.decorationOptions = {
+
+			gutterIconPath : vscode.Uri.file(filePath),
+			gutterIconSize : "100%"
+			
+
+		};
+
+		return this.decorationOptions;
+
+	}
+
+	static disposeAllDecoration(){
+		
+		for(const element of this.decorationInstances){
+
+			element.disposeDecoration();
+
+		}
+
+		this.decorationInstances = [];
+
+	}
+
+	static pad(mediaPath: string) { //possibly make mutiple variations of these functions so i dont need to make a new Decoration object and make it shared
 
 		return ()=>{
 
-			const decorationOptions : object = { 
+			this.applyDecorationConfiguration(mediaPath);
+
+			if(this.lockOriginToMedianBool === true){
+
+				this.currentOriginSelection = this.selectionMedian();
+
+			}
+
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+
+			this.cleanDecorations(circleDecoration);
 			
-				gutterIconPath : vscode.Uri.file(decorationFilePath),
-				gutterIconSize : "100%"
-					
-			};
+			console.log(this.decorationInstances);
 
-			const originSelection : vscode.Selection | undefined = this.currentOrigin();
-
-			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
-
-			const origin = new Origin(originSelection, circleDecoration);
-
-			Decoration.decorationInstances.push(circleDecoration.decoration);
-			Decoration.decorationInstances.at(-2)?.dispose();
 			origin.indicate();
 
-			new Padding(origin.selection).pad();
-
+			new Padding(origin).pad();
 			
 
 		};
 	}
 
-	static originUp(decorationFilePath : string, ){
-		
+	static originUp(mediaPath: string){
 
-		return () =>{
-			
-			
+		return ()=>{
 
-			const decorationOptions : object = { 
-			
-				gutterIconPath : vscode.Uri.file(decorationFilePath),
-				gutterIconSize : "100%"
-					
-			};
+			this.applyDecorationConfiguration(mediaPath);
 
-			this.originAddend--;
-
-			if(Math.abs(this.originAddend) >= vscode.window.activeTextEditor!.selections.length){
-
-				this.originAddend = 0;
-
+			if(this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
 			}
 
-			const originSelection : vscode.Selection | undefined = this.currentOrigin();
-			const circleDecoration = new Decoration(decorationFilePath, decorationOptions);
-
-			const origin = new Origin(originSelection, circleDecoration);
-			this.disposeDecoration(circleDecoration.decoration);
-
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
 			
+			this.cleanDecorations(circleDecoration);
+
+			this.currentOriginSelection = origin.transformation.up();
+			origin.indicate();
+
+			this.lockOriginToMedianBool = false;
+		};
+	}
+
+	static originDown(mediaPath: string){
+
+		return ()=>{
+
+			this.applyDecorationConfiguration(mediaPath);
+
+			if(this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
+			}
+
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+			
+			this.cleanDecorations(circleDecoration);
+
+			this.currentOriginSelection = origin.transformation.down();
+			origin.indicate();
+
+			this.lockOriginToMedianBool = false;
+
+		};
+	}
+
+	static lockOriginToMedian(mediaPath: string){
+
+		return ()=>{
+
+			this.lockOriginToMedianBool = !this.lockOriginToMedianBool;
+
+
+
+			if(this.lockOriginToMedianBool === true || this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
+			}
+
+			this.applyDecorationConfiguration(mediaPath);
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+
+			this.cleanDecorations(circleDecoration);
+
+			origin.indicate();
+
+		};
+
+	}
+
+
+	static showOrigin(mediaPath: string){
+
+		return ()=>{
+			
+			if(this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
+			}
+
+			this.applyDecorationConfiguration(mediaPath);
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+
+			this.cleanDecorations(circleDecoration);
+
 			origin.indicate();
 
 		};
 	}
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {	
 
 	const mediaPath = (() : string =>{	
 
@@ -319,19 +452,24 @@ export function activate(context: vscode.ExtensionContext) {
 		 ** This may need to be configured for different folder directories.
 		 */
 
-		 return path.join('\\') + '\\media\\circle.svg';
+		 return path.join('\\') + '\\media\\origin.svg';
 	})();
 	
 	
 	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad(mediaPath));	
+	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" , paddingCmd.originUp(mediaPath));	
+	const disposableOriginDown = vscode.commands.registerCommand("multicursorex.padding.originDown" , paddingCmd.originDown(mediaPath));	
+	const disposableShowOrigin = vscode.commands.registerCommand("multicursorex.padding.originShow" , paddingCmd.showOrigin(mediaPath));
+	const disposableLockOriginToMedian =  vscode.commands.registerCommand("multicursorex.padding.lockOriginToMedian" , paddingCmd.lockOriginToMedian(mediaPath));	
 	
-	context.subscriptions.push(disposablePadding);
+	context.subscriptions.push(disposablePadding, disposableOriginUp, disposableOriginDown, disposableShowOrigin, disposableLockOriginToMedian);
+	
 
-	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" ,  paddingCmd.originUp(mediaPath, ));	
-	
-	context.subscriptions.push(disposableOriginUp);
 }
 
-export function deactivate() {}
+export function deactivate() {
 
+	paddingCmd.disposeAllDecoration();
+
+}
 
