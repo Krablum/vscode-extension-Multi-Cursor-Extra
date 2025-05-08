@@ -7,7 +7,7 @@
    viewBox="0 0 211.66666 211.66667"
    version="1.1"
    id="svg1"
-   inkscape:export-filename="Circle.svg"
+   inkscape:export-filename="origin.svg"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    sodipodi:docname="origin.svg"
@@ -27,8 +27,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="0.73827583"
-     inkscape:cx="458.50072"
-     inkscape:cy="376.55303"
+     inkscape:cx="186.24475"
+     inkscape:cy="507.94024"
      inkscape:window-width="1440"
      inkscape:window-height="830"
      inkscape:window-x="-6"
@@ -49,10 +49,17 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-7.4166684)">
     <path
        id="path1"
-       style="fill:#000000;stroke-width:0.264583;opacity:0.4"
+       style="opacity:0.2;fill:#000000;stroke-width:0.264583"
        d="M 113.25,10.583333 A 95.25,95.25 0 0 0 18,105.83333 a 95.25,95.25 0 0 0 95.25,95.25 95.25,95.25 0 0 0 95.25,-95.25 95.25,95.25 0 0 0 -95.25,-95.249997 z m 0,35.250045 A 60,60 0 0 1 173.24996,105.83333 60,60 0 0 1 113.25,165.83329 60,60 0 0 1 53.250045,105.83333 60,60 0 0 1 113.25,45.833378 Z" />
+    <circle
+       style="opacity:0.4;fill:#000000;stroke-width:0.39865"
+       id="path2"
+       cx="113.25"
+       cy="105.83334"
+       r="35.878628" />
   </g>
 </svg>

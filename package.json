@@ -10,9 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:multicursorex.padding.pad",
-    "onCommand:multicursorex.padding.originUp",
-    "onCommand:multicursorex.padding.lockOriginToMedian" 
+
   ],
   "main": "./out/extension.js",
   "contributes": {

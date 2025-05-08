@@ -281,6 +281,20 @@ export class paddingCmd{
 
 	};
 
+	private static cleanDecorations(decoration: Decoration){
+
+		this.decorationInstances.push(decoration);
+		const decorationDelete : Decoration | undefined = this.decorationInstances.at(-2);
+
+		if(decorationDelete !== undefined){
+		
+			decorationDelete!.disposeDecoration();
+			this.decorationInstances.splice(this.decorationInstances.indexOf(decorationDelete!), 1);
+
+		}
+
+	}
+
 
 	private static applyDecorationConfiguration(filePath : string) : object{
 		this.decorationFilePath = filePath;
@@ -288,7 +302,7 @@ export class paddingCmd{
 		this.decorationOptions = {
 
 			gutterIconPath : vscode.Uri.file(filePath),
-			gutterIconSize : "72%"
+			gutterIconSize : "100%"
 			
 
 		};
@@ -324,16 +338,7 @@ export class paddingCmd{
 			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
 			const origin = new Origin(this.currentOriginSelection, circleDecoration);
 
-			this.decorationInstances.push(circleDecoration);
-			const decorationDelete : Decoration | undefined = this.decorationInstances.at(-2);
-
-			if(decorationDelete !== undefined){
-			
-				decorationDelete!.disposeDecoration();
-				this.decorationInstances.splice(this.decorationInstances.indexOf(decorationDelete!), 1);
-
-			}
-
+			this.cleanDecorations(circleDecoration);
 			
 			console.log(this.decorationInstances);
 
@@ -356,23 +361,11 @@ export class paddingCmd{
 			}
 
 			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
-			
 			const origin = new Origin(this.currentOriginSelection, circleDecoration);
 			
-			this.decorationInstances.push(circleDecoration);
-			const decorationDelete : Decoration | undefined = this.decorationInstances.at(-2);
-
-			if(decorationDelete !== undefined){
-			
-				decorationDelete!.disposeDecoration();
-				this.decorationInstances.splice(this.decorationInstances.indexOf(decorationDelete!), 1);
-
-			}
-
-			console.log(this.decorationInstances);
+			this.cleanDecorations(circleDecoration);
 
 			this.currentOriginSelection = origin.transformation.up();
-			
 			origin.indicate();
 
 			this.lockOriginToMedianBool = false;
@@ -390,23 +383,11 @@ export class paddingCmd{
 			}
 
 			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
-			
 			const origin = new Origin(this.currentOriginSelection, circleDecoration);
 			
-			this.decorationInstances.push(circleDecoration);
-			const decorationDelete : Decoration | undefined = this.decorationInstances.at(-2);
-
-			if(decorationDelete !== undefined){
-			
-				decorationDelete!.disposeDecoration();
-				this.decorationInstances.splice(this.decorationInstances.indexOf(decorationDelete!), 1);
-
-			}
-
-			console.log(this.decorationInstances);
+			this.cleanDecorations(circleDecoration);
 
 			this.currentOriginSelection = origin.transformation.down();
-			
 			origin.indicate();
 
 			this.lockOriginToMedianBool = false;
@@ -414,19 +395,52 @@ export class paddingCmd{
 		};
 	}
 
-	static lockOriginToMedian(){
+	static lockOriginToMedian(mediaPath: string){
 
 		return ()=>{
 
 			this.lockOriginToMedianBool = !this.lockOriginToMedianBool;
-			console.log(this.lockOriginToMedianBool);
+
+
+
+			if(this.lockOriginToMedianBool === true || this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
+			}
+
+			this.applyDecorationConfiguration(mediaPath);
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+
+			this.cleanDecorations(circleDecoration);
+
+			origin.indicate();
 
 		};
 
 	}
+
+
+	static showOrigin(mediaPath: string){
+
+		return ()=>{
+			
+			if(this.currentOriginSelection === undefined){
+				this.currentOriginSelection = this.selectionMedian();
+			}
+
+			this.applyDecorationConfiguration(mediaPath);
+			const circleDecoration = new Decoration(this.decorationFilePath, this.decorationOptions);
+			const origin = new Origin(this.currentOriginSelection, circleDecoration);
+
+			this.cleanDecorations(circleDecoration);
+
+			origin.indicate();
+
+		};
+	}
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {	
 
 	const mediaPath = (() : string =>{	
 
@@ -445,9 +459,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const disposablePadding = vscode.commands.registerCommand("multicursorex.padding.pad" ,  paddingCmd.pad(mediaPath));	
 	const disposableOriginUp = vscode.commands.registerCommand("multicursorex.padding.originUp" , paddingCmd.originUp(mediaPath));	
 	const disposableOriginDown = vscode.commands.registerCommand("multicursorex.padding.originDown" , paddingCmd.originDown(mediaPath));	
-	const disposableLockOriginToMedian =  vscode.commands.registerCommand("multicursorex.padding.lockOriginToMedian" , paddingCmd.lockOriginToMedian());	
+	const disposableShowOrigin = vscode.commands.registerCommand("multicursorex.padding.originShow" , paddingCmd.showOrigin(mediaPath));
+	const disposableLockOriginToMedian =  vscode.commands.registerCommand("multicursorex.padding.lockOriginToMedian" , paddingCmd.lockOriginToMedian(mediaPath));	
 	
-	context.subscriptions.push(disposablePadding, disposableOriginUp, disposableOriginDown, disposableLockOriginToMedian);
+	context.subscriptions.push(disposablePadding, disposableOriginUp, disposableOriginDown, disposableShowOrigin, disposableLockOriginToMedian);
 	
 
 }
@@ -457,5 +472,4 @@ export function deactivate() {
 	paddingCmd.disposeAllDecoration();
 
 }
-
 
